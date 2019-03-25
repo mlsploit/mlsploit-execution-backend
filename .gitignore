@@ -1,0 +1,16 @@
+.DS_Store
+
+*.pyc
+*__pycache__
+
+# Local scratch directory
+.scratch
+
+# Environments
+!.env
+.venv
+Pipfile
+Pipfile.lock
+
+celerybeat-schedule
+celerybeat-schedule.db

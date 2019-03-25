@@ -1,0 +1,12 @@
+.venv
+Pipfile
+Pipfile.lock
+
+*__pycache__
+*.pyc
+
+.scratch
+
+celerybeat-schedule
+celerybeat-schedule.db
+

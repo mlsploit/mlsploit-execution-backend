@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+    mlsploit-networking-backend-service:
+        image: redis:latest
+        ports:
+            - 6379:6379
+
+    mlsploit-networking-broker-service:
+        build: ./docker-rabbitmq
+        ports:
+            - 5672:5672
+            - 15672:15672
+
+    mlsploit-monitoring-service:
+        build: ./docker-flower
+        ports:
+            - 5555:5555
+        links:
+            - mlsploit-networking-broker-service

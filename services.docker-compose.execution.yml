@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+    mlsploit-execution-service:
+        build:
+            context: .
+            args:
+                - STAGE
+                - BASE_DIR
+        network_mode: host
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - .:/app
+        env_file:
+            - .env
