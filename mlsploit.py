@@ -100,9 +100,12 @@ def perform_job(self, job_url):
     job_dir_docker = os.path.join(SCRATCH_DIR_DOCKER, 'jobs', str(job_id))
     input_dir_docker = os.path.join(job_dir_docker, 'input')
     output_dir_docker = os.path.join(job_dir_docker, 'output')
+    
+    original_umask = os.umask(0)
     os.makedirs(job_dir, exist_ok=True)
     os.makedirs(input_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
+    os.umask(original_umask)
 
     # Download input files
     for name, url in input_file_urls.items():
