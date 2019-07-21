@@ -8,7 +8,13 @@ then
     exit 1
 fi
 
+if [[ -z "${MLSPLOIT_EXECUTION_QUEUES}" ]]
+then
+    MLSPLOIT_EXECUTION_QUEUES="celery"
+fi
+
 celery worker -A mlsploit \
+      -Q ${MLSPLOIT_EXECUTION_QUEUES} \
       -l info \
       -Ofair \
       -c ${MLSPLOIT_EXECUTION_JOB_CONCURRENCY}

@@ -29,3 +29,6 @@ assert API_ADMIN_TOKEN is not None, \
     MLSPLOIT_API_ADMIN_TOKEN environment variable not found.
     $ export MLSPLOIT_API_ADMIN_TOKEN='dd6f003f47b68e3fcd24fe5b3cade72168557d9f'
     """
+
+BUILD_MODULES = _os.getenv('MLSPLOIT_BUILD_MODULES')
+BUILD_MODULES = (BUILD_MODULES or '*').split(',')

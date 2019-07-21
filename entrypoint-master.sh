@@ -9,6 +9,7 @@ then
 fi
 
 celery worker -A mlsploit -B \
+      -Q housekeeping \
       -l info \
       -Ofair \
       -c ${MLSPLOIT_EXECUTION_JOB_CONCURRENCY}

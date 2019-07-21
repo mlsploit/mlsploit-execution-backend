@@ -22,6 +22,7 @@ app.conf.update(
 app.conf.beat_schedule = {
     'fetch-jobs-every-10-seconds': {
         'task': 'mlsploit.fetch_actionable_jobs',
+        'options': {'queue': 'housekeeping'},
         'schedule': 10.0}}
 
 RestClient.set_token(API_ADMIN_TOKEN)
@@ -36,22 +37,27 @@ def setup_docker_images(sender, instance, **kwargs):
     modules, num_built = Module.get_all(), 0
     for module in modules:
         name = module.name
-        repo = module.repo
-        tmp_dir = tempfile.mkdtemp()
 
-        print(f'Building docker image for {name}...')
+        if '*' in BUILD_MODULES or name in BUILD_MODULES:
+            repo = module.repo
+            tmp_dir = tempfile.mkdtemp()
 
-        try:
-            Git(tmp_dir).clone(repo)
-            repo_dir = glob.glob(os.path.join(tmp_dir, '*'))[0]
+            print(f'Building docker image for {name}...')
 
-            client.images.build(path=repo_dir, tag=name)
-            num_built += 1
+            try:
+                Git(tmp_dir).clone(repo)
+                repo_dir = glob.glob(os.path.join(tmp_dir, '*'))[0]
 
-        except Exception as e:
-            print(f'[ERROR] {e}')
+                client.images.build(path=repo_dir, tag=name)
+                num_built += 1
 
-        shutil.rmtree(tmp_dir)
+                print(f'Successfully built docker image for {name}.')
+
+            except Exception as e:
+                print(f'[ERROR] Failed to build docker image '
+                      f'for {name} ({e})')
+
+            shutil.rmtree(tmp_dir)
     print(f'Built docker images for {num_built} modules.')
 
     wait = 10
@@ -64,9 +70,10 @@ def fetch_actionable_jobs():
     jobs = Job.get_all_actionable()
 
     for job in jobs:
+        job_module = job.task.function.module.name
         job.status = 'QUEUED'
         promise = perform_job.s(job.url)
-        promise.apply_async()
+        promise.apply_async(queue=job_module)
 
     return [job.url for job in jobs]
 
