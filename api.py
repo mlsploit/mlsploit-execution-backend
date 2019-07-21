@@ -5,6 +5,9 @@ from cachetools import TTLCache
 import requests
 
 
+API_HOST_ADDR = os.getenv('MLSPLOIT_HOST_URL')
+assert API_HOST_ADDR is not None
+
 API_BASE_URL = os.getenv('MLSPLOIT_API_BASE_URL')
 assert API_BASE_URL is not None, \
     """
@@ -93,6 +96,7 @@ class ApiDataModel(object):
     _json_props = list()
 
     def __init__(self, url):
+        url = url.replace('localhost', API_HOST_ADDR)
         assert self._endpoint in url
         super(ApiDataModel, self).__setattr__('_url', url)
 
