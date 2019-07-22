@@ -97,8 +97,9 @@ def perform_job(self, job_url):
                    if parent_job is None
                    else parent_job.output_files)
     input_file_names = [f.name for f in input_files]
-    input_file_urls = {f.name: f.blob_url for f in input_files}
     input_file_tags = {f.name: f.tags for f in input_files}
+    input_file_urls = {f.name: f.url for f in input_files}
+    input_file_blob_urls = {f.name: f.blob_url for f in input_files}
 
     # Create job folder with input and output directories
     job_dir = os.path.join(SCRATCH_DIR, 'jobs', str(job_id))
@@ -115,7 +116,7 @@ def perform_job(self, job_url):
     os.umask(original_umask)
 
     # Download input files
-    for name, url in input_file_urls.items():
+    for name, url in input_file_blob_urls.items():
         urlretrieve(url, os.path.join(input_dir, name))
 
     # Create input JSON file
