@@ -17,7 +17,7 @@ from constants import *
 
 app = Celery(APP_NAME, broker=BROKER_URL, backend=BACKEND_URL)
 app.conf.update(
-    worker_prefetch_multiplier=1, 
+    worker_prefetch_multiplier=1,
     worker_send_task_events=True)
 app.conf.beat_schedule = {
     'fetch-jobs-every-10-seconds': {
@@ -108,7 +108,7 @@ def perform_job(self, job_url):
     job_dir_docker = os.path.join(SCRATCH_DIR_DOCKER, 'jobs', str(job_id))
     input_dir_docker = os.path.join(job_dir_docker, 'input')
     output_dir_docker = os.path.join(job_dir_docker, 'output')
-    
+
     original_umask = os.umask(0)
     os.makedirs(job_dir, exist_ok=True)
     os.makedirs(input_dir, exist_ok=True)
@@ -134,14 +134,14 @@ def perform_job(self, job_url):
     client = docker.from_env()
     try:
         container_logs = client.containers.run(
-            '%s:latest' % module_name, auto_remove=True,
-            user=1001, stdout=True, stderr=True,
+            '%s:latest' % module_name,
             environment=['PYTHONUNBUFFERED=1'],
+            auto_remove=True, stdout=True, stderr=True,
             volumes={
                 input_dir_docker: {'bind': '/mnt/input', 'mode': 'ro'},
                 output_dir_docker: {'bind': '/mnt/output', 'mode': 'rw'}})
     except Exception as e:
-        print(e)
+        print('[MLSPLOIT-DOCKER-ERROR] %s' % e)
         job.status = 'FAILED'
     else:
         job.logs = container_logs
