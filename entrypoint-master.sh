@@ -8,8 +8,11 @@ then
     exit 1
 fi
 
+CELERY_ID=mlsploit.master@%h
+
 celery worker -A mlsploit -B \
       -Q housekeeping \
       -l info \
       -Ofair \
+      -n ${CELERY_ID} \
       -c ${MLSPLOIT_EXECUTION_JOB_CONCURRENCY}
