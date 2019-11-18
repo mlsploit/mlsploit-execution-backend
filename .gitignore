@@ -3,6 +3,8 @@
 *.pyc
 *__pycache__
 
+.idea/
+
 # Local scratch directory
 .scratch
 
