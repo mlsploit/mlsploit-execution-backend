@@ -179,6 +179,18 @@ class Function(ApiDataModel):
 class User(ApiDataModel):
     _endpoint = RestClient.make_path(API_BASE_URL, 'users')
 
+    @classmethod
+    def get_current(cls):
+        try:
+            current_user_endpoint = RestClient.make_path(
+                API_BASE_URL.replace('/api/v1', ''),
+                'auth', 'user')
+            current_user_data = RestClient.get(current_user_endpoint)
+            current_user_url = current_user_data['url']
+            return cls(current_user_url)
+        except:
+            return None
+
 
 class File(ApiDataModel):
     _endpoint = RestClient.make_path(API_BASE_URL, 'files')

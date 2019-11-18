@@ -11,7 +11,7 @@ from celery.signals import celeryd_after_setup
 import docker
 from git import Git
 
-from api import File, Job, Module, RestClient
+from api import File, Job, Module, RestClient, User
 from constants import *
 
 
@@ -86,6 +86,10 @@ def perform_job(self, job_id):
     output_json, output_file_names = dict(), list()
 
     # Get all data from API at once since it is time-cached
+    current_user = User.get_current()
+    current_user_url = (current_user.url
+                        if current_user is not None
+                        else None)
     job_url = job.url
     module = job.task.function.module
     module_name = module.name
@@ -165,9 +169,10 @@ def perform_job(self, job_id):
                     output_filepaths):
 
             f = None
-            file_kwargs = {
-                'owner': owner_url, 'kind': 'OUTPUT',
-                'tags': tags, 'blob': open(path, 'rb')}
+            file_kwargs = {'kind': 'OUTPUT', 'tags': tags,
+                           'blob': open(path, 'rb')}
+            if current_user_url != owner_url:
+                file_kwargs['owner'] = owner_url
 
             if name in output_json['files_modified']:
                 file_kwargs['parent_file'] = input_file_urls[name]
