@@ -72,21 +72,21 @@ def fetch_actionable_jobs():
     for job in jobs:
         job_module = job.task.function.module.name
         job.status = 'QUEUED'
-        promise = perform_job.s(job.url)
+        promise = perform_job.s(job.id)
         promise.apply_async(queue=job_module)
 
     return [job.url for job in jobs]
 
 
 @app.task(bind=True)
-def perform_job(self, job_url):
-    job = Job(job_url)
+def perform_job(self, job_id):
+    job = Job.from_id(job_id)
     job.status = 'RUNNING'
 
     output_json, output_file_names = dict(), list()
 
     # Get all data from API at once since it is time-cached
-    job_id = job.id
+    job_url = job.url
     module = job.task.function.module
     module_name = module.name
     function_name = job.task.function.name

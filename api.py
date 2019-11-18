@@ -128,6 +128,11 @@ class ApiDataModel(object):
         return self._url
 
     @classmethod
+    def from_id(cls, id_):
+        url = RestClient.make_path(cls._endpoint, str(id_)) + '/'
+        return cls(url)
+
+    @classmethod
     def create(cls, **kwargs):
         files = None
         if 'blob' in kwargs:
