@@ -1,7 +1,7 @@
 cachetools==4.0.0
 celery==4.4.1
 coolname==1.1.0
-docker==3.7.0
+docker==4.2.0
 flower==0.9.3
 gitpython==2.1.11
 redis==3.0.1
