@@ -3,7 +3,7 @@ celery==4.4.1
 coolname==1.1.0
 docker==4.2.0
 flower==0.9.3
-gitpython==2.1.11
+gitpython==3.1.0
 redis==3.0.1
 requests==2.20.0
 tornado==5.1.1
