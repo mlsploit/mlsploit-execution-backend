@@ -11,10 +11,3 @@ services:
         ports:
             - 5672:5672
             - 15672:15672
-
-    mlsploit-monitoring-service:
-        build: ./docker-flower
-        ports:
-            - 5555:5555
-        links:
-            - mlsploit-networking-broker-service
