@@ -129,69 +129,83 @@ def perform_job(self, job_id):
         json.dump(input_json_dict, f)
 
     # Run docker image
+    container_logs = ""
     client = docker.from_env()
     try:
-        container_logs = client.containers.run(
+        container = client.containers.run(
             "%s:latest" % module_name,
             environment=["PYTHONUNBUFFERED=1"],
             auto_remove=True,
+            detach=True,
             stdout=True,
             stderr=True,
             volumes={
-                input_dir_docker: {"bind": "/mnt/input", "mode": "ro"},
+                input_dir_docker: {"bind": "/mnt/input", "mode": "rw"},
                 output_dir_docker: {"bind": "/mnt/output", "mode": "rw"},
             },
         )
+
+        for line in container.logs(stream=True):
+            container_logs += line.decode("utf-8")
+            job.logs = container_logs
 
     except Exception as e:
         print("[MLSPLOIT-DOCKER-ERROR] %s" % e)
         job.status = "FAILED"
 
     else:
-        job.logs = container_logs
+        container_exit_status = container.wait()
+        container_exit_status = container_exit_status["StatusCode"]
 
-        # Update output for job
-        output_json_filepath = os.path.join(output_dir, "output.json")
-        with open(output_json_filepath, "r") as f:
-            output_json = json.load(f)
-        job.output = output_json
+        if container_exit_status == 0:
+            # Update output for job
+            output_json_filepath = os.path.join(output_dir, "output.json")
+            with open(output_json_filepath, "r") as f:
+                output_json = json.load(f)
+            job.output = output_json
 
-        # Upload output files
-        output_file_names = output_json["files"]
-        output_file_tags = output_json["tags"]
-        output_filepaths = [os.path.join(output_dir, f) for f in output_file_names]
-        assert all(os.path.exists(fp) for fp in output_filepaths)
-        output_file_urls = list()
-        for name, tags, path in zip(
-            output_file_names, output_file_tags, output_filepaths
-        ):
+            # Upload output files
+            output_file_names = output_json["files"]
+            output_file_tags = output_json["tags"]
+            output_filepaths = [os.path.join(output_dir, f) for f in output_file_names]
+            assert all(os.path.exists(fp) for fp in output_filepaths)
+            output_file_urls = list()
+            for name, tags, path in zip(
+                output_file_names, output_file_tags, output_filepaths
+            ):
 
-            f = None
-            file_kwargs = {"kind": "OUTPUT", "tags": tags, "blob": open(path, "rb")}
-            if current_user_url != owner_url:
-                file_kwargs["owner"] = owner_url
+                f = None
+                file_kwargs = {"kind": "OUTPUT", "tags": tags, "blob": open(path, "rb")}
+                if current_user_url != owner_url:
+                    file_kwargs["owner"] = owner_url
 
-            if name in output_json["files_modified"]:
-                file_kwargs["parent_file"] = input_file_urls[name]
-                f = File.create(**file_kwargs)
+                if name in output_json["files_modified"]:
+                    file_kwargs["parent_file"] = input_file_urls[name]
+                    f = File.create(**file_kwargs)
 
-            elif name in output_json["files_created"]:
-                f = File.create(**file_kwargs)
+                elif name in output_json["files_created"]:
+                    f = File.create(**file_kwargs)
 
-            elif name in input_file_names:
-                file_url = input_file_urls[name]
-                file_tags = input_file_tags[name]
-                file_tags.update(tags)
-                f = File(file_url)
-                f.tags = file_tags
+                elif name in input_file_names:
+                    file_url = input_file_urls[name]
+                    file_tags = input_file_tags[name]
+                    file_tags.update(tags)
+                    f = File(file_url)
+                    f.tags = file_tags
 
-            if f is not None:
-                output_file_urls.append(f.url)
+                if f is not None:
+                    output_file_urls.append(f.url)
 
-        job.output_files = output_file_urls
-        job.status = "FINISHED"
+            job.output_files = output_file_urls
+            job.status = "FINISHED"
+
+        else:
+            job.status = "FAILED"
 
     finally:
+        # Update logs
+        job.logs = container_logs
+
         # Cleanup
         shutil.rmtree(job_dir)
 
