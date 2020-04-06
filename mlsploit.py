@@ -31,8 +31,6 @@ RestClient.set_token(API_ADMIN_TOKEN)
 @celeryd_after_setup.connect
 def setup_docker_images(sender, instance, **kwargs):
     client = docker.from_env()
-    # image_tags = [tag for image in client.images.list()
-    #               for tag in image.tags]
 
     modules, num_built = Module.get_all(), 0
     for module in modules:
@@ -54,7 +52,7 @@ def setup_docker_images(sender, instance, **kwargs):
                 print(f"Successfully built docker image for {name}.")
 
             except Exception as e:
-                print(f"[ERROR] Failed to build docker image " f"for {name} ({e})")
+                print(f"[ERROR] Failed to build docker image for {name} ({e})")
 
             shutil.rmtree(tmp_dir)
     print(f"Built docker images for {num_built} modules.")
@@ -144,9 +142,11 @@ def perform_job(self, job_id):
                 output_dir_docker: {"bind": "/mnt/output", "mode": "rw"},
             },
         )
+
     except Exception as e:
         print("[MLSPLOIT-DOCKER-ERROR] %s" % e)
         job.status = "FAILED"
+
     else:
         job.logs = container_logs
 
@@ -175,7 +175,7 @@ def perform_job(self, job_id):
                 file_kwargs["parent_file"] = input_file_urls[name]
                 f = File.create(**file_kwargs)
 
-            elif name in output_json["files_extra"]:
+            elif name in output_json["files_created"]:
                 f = File.create(**file_kwargs)
 
             elif name in input_file_names:
@@ -191,7 +191,8 @@ def perform_job(self, job_id):
         job.output_files = output_file_urls
         job.status = "FINISHED"
 
-    # Cleanup
-    shutil.rmtree(job_dir)
+    finally:
+        # Cleanup
+        shutil.rmtree(job_dir)
 
     return job_url, output_json, output_file_names

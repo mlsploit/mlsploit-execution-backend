@@ -156,13 +156,13 @@ class ApiDataModel(object):
 
 class Module(ApiDataModel):
     _endpoint = RestClient.make_path(API_BASE_URL, "modules")
-    _json_props = ["input_schema", "output_schema"]
+    _json_props = ["config"]
 
 
 class Function(ApiDataModel):
     _endpoint = RestClient.make_path(API_BASE_URL, "functions")
     _expandable = {"module": Module}
-    _json_props = ["options"]
+    _json_props = ["options", "optional_filetypes", "output_tags"]
 
 
 class User(ApiDataModel):
