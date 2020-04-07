@@ -9,7 +9,7 @@ from urllib.request import urlretrieve
 from celery import Celery
 from celery.signals import celeryd_after_setup
 import docker
-from git import Git
+import git
 
 from api import File, Job, Module, RestClient, User
 from constants import *
@@ -37,14 +37,15 @@ def setup_docker_images(sender, instance, **kwargs):
         name = module.name
 
         if "*" in BUILD_MODULES or name in BUILD_MODULES:
-            repo = module.repo
-            tmp_dir = tempfile.mkdtemp()
-
             print(f"Building docker image for {name}...")
 
+            repo_dir = tempfile.mkdtemp()
+            repo_url = module.repo_url
+            repo_branch = module.repo_branch
+
             try:
-                Git(tmp_dir).clone(repo)
-                repo_dir = glob.glob(os.path.join(tmp_dir, "*"))[0]
+                print(f"Cloning branch {repo_branch} from {repo_url}...")
+                git.Repo.clone_from(repo_url, repo_dir, branch=repo_branch)
 
                 client.images.build(path=repo_dir, tag=name)
                 num_built += 1
@@ -54,7 +55,7 @@ def setup_docker_images(sender, instance, **kwargs):
             except Exception as e:
                 print(f"[ERROR] Failed to build docker image for {name} ({e})")
 
-            shutil.rmtree(tmp_dir)
+            shutil.rmtree(repo_dir)
     print(f"Built docker images for {num_built} modules.")
 
     wait = 10
