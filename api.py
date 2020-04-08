@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import urlparse, ParseResult
 
 from cachetools import TTLCache
 import requests
@@ -85,7 +86,9 @@ class ApiDataModel(object):
     _json_props = list()
 
     def __init__(self, url):
-        assert self._endpoint in url
+        endpoint = urlparse(self._endpoint)
+        endpoint = ParseResult("", *endpoint[1:]).geturl()
+        assert endpoint in url
         super(ApiDataModel, self).__setattr__("_url", url)
 
     def __getattr__(self, item):
