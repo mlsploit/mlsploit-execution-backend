@@ -45,7 +45,9 @@ def setup_docker_images(sender, instance, **kwargs):
 
             try:
                 print(f"Cloning branch {repo_branch} from {repo_url}...")
-                git.Repo.clone_from(repo_url, repo_dir, branch=repo_branch)
+                git.Repo.clone_from(
+                    repo_url, repo_dir, branch=repo_branch, recursive=True
+                )
 
                 client.images.build(path=repo_dir, tag=name)
                 num_built += 1
