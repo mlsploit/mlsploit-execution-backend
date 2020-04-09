@@ -110,6 +110,7 @@ def perform_job(self, job_id):
     def log(logtxt, lvl=logging.INFO):
         nonlocal job_logs
 
+        logtxt = str(logtxt)
         logtxt = logtxt.strip(" \n")
 
         job_logs += logtxt + "\n"
@@ -187,7 +188,6 @@ def perform_job(self, job_id):
                 input_dir_docker: {"bind": "/mnt/input", "mode": "rw"},
                 output_dir_docker: {"bind": "/mnt/output", "mode": "rw"},
             },
-            auto_remove=True,
             environment=["PYTHONUNBUFFERED=1"],
         )
 
@@ -196,6 +196,7 @@ def perform_job(self, job_id):
 
         container_exit_status = container.wait()
         container_exit_status = container_exit_status["StatusCode"]
+        container.remove()
 
         assert (
             container_exit_status == 0
@@ -245,7 +246,7 @@ def perform_job(self, job_id):
 
     except Exception as e:
         job.status = "FAILED"
-        log("Job failed!!!")
+        log("Job failed!!!", logging.ERROR)
 
     finally:
         # Update logs
