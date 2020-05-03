@@ -10,7 +10,7 @@
 .scratch
 
 # Environments
-!.env
+.env
 .venv
 Pipfile
 Pipfile.lock
