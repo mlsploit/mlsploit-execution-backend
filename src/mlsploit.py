@@ -19,7 +19,6 @@ from constants import *
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
 app = Celery(APP_NAME, broker=BROKER_URL, backend=BACKEND_URL)
 app.conf.update(worker_prefetch_multiplier=1, worker_send_task_events=True)
 app.conf.beat_schedule = {
@@ -33,16 +32,24 @@ app.conf.beat_schedule = {
 RestClient.set_token(API_ADMIN_TOKEN)
 
 
-@celeryd_after_setup.connect
-def setup_docker_images(sender, instance, **kwargs):
-    logger.info("Initializing docker client")
-    client = docker.APIClient(base_url="unix://var/run/docker.sock")
-    logger.debug(client)
+def check_master_online():
+    master_online = False
+    workers = app.control.inspect().active() or []
+    for worker_name in workers:
+        master_online = "mlsploit.master" in worker_name
+    return master_online
+
+
+def setup_docker_images():
+    logger.debug(f"BUILD_MODULES = {BUILD_MODULES}")
 
     logger.info("Fetching all modules")
     modules, num_built = Module.get_all(), 0
     logger.debug(modules)
-    logger.debug(f"BUILD_MODULES = {BUILD_MODULES}")
+
+    logger.info("Initializing docker client")
+    client = docker.APIClient(base_url="unix://var/run/docker.sock")
+    logger.debug(client)
 
     for module in modules:
         name = module.name
@@ -54,9 +61,9 @@ def setup_docker_images(sender, instance, **kwargs):
             repo_branch = module.repo_branch
             repo_dir = tempfile.mkdtemp()
 
-            logger.debug(f"{name}: repo_url = {repo_url}")
+            logger.debug(f"{name}: repo_url    = {repo_url}")
             logger.debug(f"{name}: repo_branch = {repo_branch}")
-            logger.debug(f"{name}: repo_dir = {repo_dir}")
+            logger.debug(f"{name}: repo_dir    = {repo_dir}")
 
             try:
                 git.Repo.clone_from(
@@ -83,9 +90,33 @@ def setup_docker_images(sender, instance, **kwargs):
 
     logger.info(f"Built docker images for {num_built} modules")
 
-    wait = 10
-    logger.info(f"Waiting {wait}s for networking services to spin up")
-    time.sleep(wait)
+
+@celeryd_after_setup.connect
+def startup(sender, instance, **kwargs):
+    logger.debug(f"EXECUTION_MODE     = {EXECUTION_MODE}")
+    logger.debug(f"SCRATCH_DIR        = {SCRATCH_DIR}")
+    logger.debug(f"SCRATCH_DIR_DOCKER = {SCRATCH_DIR_DOCKER}")
+
+    if EXECUTION_MODE == "master":
+        wait = 20
+        logger.info(f"Waiting {wait}s for other services to spin up")
+        time.sleep(wait)
+
+    else:
+        master_online = check_master_online()
+        while not master_online:
+            wait = 10  # `check_master_online` already blocks on networking services
+            logger.info(f"Waiting {wait}s for mlsploit.master to come online")
+            time.sleep(wait)
+
+            master_online = check_master_online()
+        logger.info("Detected mlsploit.master is online!")
+
+        try:
+            logger.info("Setting up modules")
+            setup_docker_images()
+        except Exception as e:
+            logger.error("Setting up MLsploit modules failed", exc_info=True)
 
 
 @app.task

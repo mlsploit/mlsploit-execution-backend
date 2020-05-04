@@ -7,9 +7,7 @@ import requests
 
 
 API_BASE_URL = os.getenv("MLSPLOIT_API_BASE_URL")
-assert (
-    API_BASE_URL is not None
-), """
+assert API_BASE_URL, """
     MLSPLOIT_API_BASE_URL environment variable not found.
     $ export MLSPLOIT_API_BASE_URL='http://localhost:8000/api/v1'
     """

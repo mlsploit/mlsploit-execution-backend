@@ -8,6 +8,8 @@ then
     exit 1
 fi
 
+cd ./src
+
 CELERY_ID=mlsploit.master@%h
 
 celery worker -A mlsploit -B \
