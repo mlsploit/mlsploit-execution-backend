@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 
-set -a && . .env && set +a
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd -P)"
 
-MLSPLOIT_DOCKER_HOST_BASE_DIR="$(pwd)";
-
-docker-compose \
-    -f services.docker-compose.execution.yml \
-    -f services.docker-compose.networking.yml \
-    build \
-    --build-arg STAGE=master \
-    --build-arg BASE_DIR="${MLSPLOIT_DOCKER_HOST_BASE_DIR}"
+DOCKER_PROJECT_NAME=mlsploit-execution-backend-master
 
 docker-compose \
-    -f services.docker-compose.execution.yml \
-    -f services.docker-compose.networking.yml \
+    -p ${DOCKER_PROJECT_NAME} \
+    -f docker-compose.execution.yml \
+    -f docker-compose.networking.yml \
     up
