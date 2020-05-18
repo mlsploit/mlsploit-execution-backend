@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -a && . .env && set +a
 
@@ -13,8 +13,8 @@ cd ./src
 CELERY_ID=mlsploit.master@%h
 
 celery worker -A mlsploit -B \
-      -Q housekeeping \
       -l info \
       -Ofair \
       -n ${CELERY_ID} \
+      -Q housekeeping \
       -c ${MLSPLOIT_EXECUTION_JOB_CONCURRENCY}

@@ -17,3 +17,6 @@ Pipfile.lock
 
 celerybeat-schedule
 celerybeat-schedule.db
+
+# Modules file
+/modules.csv

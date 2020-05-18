@@ -29,5 +29,5 @@ assert API_ADMIN_TOKEN, """
 
 EXECUTION_MODE = os.getenv("CONTAINER_BUILD_STAGE")
 
-BUILD_MODULES = os.getenv("MLSPLOIT_BUILD_MODULES")
-BUILD_MODULES = (BUILD_MODULES or "").split(",")
+BUILD_MODULES = os.getenv("MLSPLOIT_MODULES")
+BUILD_MODULES = list(filter(len, (BUILD_MODULES or "").split(",")))

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -a && . .env && set +a
 
@@ -8,10 +8,7 @@ then
     exit 1
 fi
 
-if [[ -z "${MLSPLOIT_EXECUTION_QUEUES}" ]]
-then
-    MLSPLOIT_EXECUTION_QUEUES="celery"
-fi
+export MLSPLOIT_MODULES=$(./get-module-names.sh)
 
 cd ./src
 
@@ -20,8 +17,8 @@ RAND_STR=$(python3 -c "from __future__ import print_function; from coolname impo
 CELERY_ID=mlsploit.worker.${DATE_STR}.${RAND_STR}@%h
 
 celery worker -A mlsploit \
-      -Q ${MLSPLOIT_EXECUTION_QUEUES} \
-      -l info \
       -Ofair \
+      -l info \
       -n ${CELERY_ID} \
+      -Q ${MLSPLOIT_MODULES:-celery} \
       -c ${MLSPLOIT_EXECUTION_JOB_CONCURRENCY}
