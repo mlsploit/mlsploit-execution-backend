@@ -98,11 +98,13 @@ def startup(sender, instance, **kwargs):
     logger.debug(f"SCRATCH_DIR_DOCKER = {SCRATCH_DIR_DOCKER}")
 
     if EXECUTION_MODE == "master":
-        wait = 20
+        wait = 60
         logger.info(f"Waiting {wait}s for other services to spin up")
         time.sleep(wait)
 
     else:
+        logger.debug(f"BUILD_MODULES      = {BUILD_MODULES}")
+
         master_online = check_master_online()
         while not master_online:
             wait = 10  # `check_master_online` already blocks on networking services
@@ -112,11 +114,14 @@ def startup(sender, instance, **kwargs):
             master_online = check_master_online()
         logger.info("Detected mlsploit.master is online!")
 
-        try:
-            logger.info("Setting up modules")
-            setup_docker_images()
-        except Exception as e:
-            logger.error("Setting up MLsploit modules failed", exc_info=True)
+        if len(BUILD_MODULES) > 0:
+            try:
+                logger.info("Setting up modules")
+                setup_docker_images()
+            except Exception as e:
+                logger.error("Setting up MLsploit modules failed", exc_info=True)
+        else:
+            logger.info("No modules to build!")
 
 
 @app.task
