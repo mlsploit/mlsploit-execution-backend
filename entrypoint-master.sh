@@ -8,6 +8,8 @@ then
     exit 1
 fi
 
+./wait-for-rabbitmq.py || exit 1
+
 cd ./src
 
 CELERY_ID=mlsploit.master@%h

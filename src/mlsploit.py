@@ -41,8 +41,6 @@ def check_master_online():
 
 
 def setup_docker_images():
-    logger.debug(f"BUILD_MODULES = {BUILD_MODULES}")
-
     logger.info("Fetching all modules")
     modules, num_built = Module.get_all(), 0
     logger.debug(modules)
@@ -98,7 +96,7 @@ def startup(sender, instance, **kwargs):
     logger.debug(f"SCRATCH_DIR_DOCKER = {SCRATCH_DIR_DOCKER}")
 
     if EXECUTION_MODE == "master":
-        wait = 60
+        wait = 5
         logger.info(f"Waiting {wait}s for other services to spin up")
         time.sleep(wait)
 
@@ -107,7 +105,7 @@ def startup(sender, instance, **kwargs):
 
         master_online = check_master_online()
         while not master_online:
-            wait = 10  # `check_master_online` already blocks on networking services
+            wait = 5  # `check_master_online` already blocks on networking services
             logger.info(f"Waiting {wait}s for mlsploit.master to come online")
             time.sleep(wait)
 

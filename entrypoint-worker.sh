@@ -10,6 +10,8 @@ fi
 
 export MLSPLOIT_MODULES=$(./get-module-names.sh)
 
+./wait-for-rabbitmq.py || exit 1
+
 cd ./src
 
 DATE_STR=$(date +%s)
