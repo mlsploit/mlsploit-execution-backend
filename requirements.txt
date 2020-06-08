@@ -1,5 +1,5 @@
 cachetools==4.0.0
-celery==4.4.1
+celery==4.4.5
 coolname==1.1.0
 docker==4.2.0
 gitpython==3.1.0
