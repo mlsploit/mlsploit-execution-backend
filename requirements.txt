@@ -5,5 +5,5 @@ docker==4.2.0
 gitpython==3.1.0
 pika==1.1.0
 redis==3.4.1
-requests==2.23.0
+requests==2.25.0
 tornado==6.0.4
