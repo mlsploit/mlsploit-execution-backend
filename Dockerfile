@@ -3,7 +3,7 @@ FROM docker:stable
 VOLUME /app
 
 RUN apk upgrade --no-cache \
-    && apk add --no-cache --update git python3
+    && apk add --no-cache --update git python3 py-pip
 
 ENV PYTHONUNBUFFERED 1
 
