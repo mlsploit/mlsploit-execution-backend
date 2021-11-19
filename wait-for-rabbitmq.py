@@ -8,18 +8,12 @@ import pika
 
 
 MLSPLOIT_BROKER_URL = os.getenv("MLSPLOIT_BROKER_URL")
-
-username, password, host, port, vhost = re.search(
-    r"^amqp:\/\/(\w+):([\s\S]+)@([-\w\d]+):(\d+)\/(\w+)$", MLSPLOIT_BROKER_URL
-).groups()
-
-credentials = pika.PlainCredentials(username, password)
-parameters = pika.ConnectionParameters(host, port, vhost, credentials)
+parameters = pika.URLParameters(MLSPLOIT_BROKER_URL)
 
 wait = 5
 start = time.time()
 while True:
-    print(f"Waiting {wait}s for RabbitMQ to come up at {host}:{port}/{vhost}")
+    print(f"Waiting {wait}s for RabbitMQ to come up...")
     time.sleep(wait)
 
     try:
