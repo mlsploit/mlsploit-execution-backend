@@ -34,9 +34,9 @@ RestClient.set_token(API_ADMIN_TOKEN)
 
 def check_master_online():
     master_online = False
-    workers = app.control.inspect().active() or []
-    for worker_name in workers:
-        master_online = "mlsploit.master" in worker_name
+    workers = app.control.inspect().active() or dict()
+    for worker_name in workers.keys():
+        master_online = master_online or worker_name.startswith("mlsploit.master")
     return master_online
 
 
