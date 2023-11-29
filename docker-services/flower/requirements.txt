@@ -1,2 +1,2 @@
 flower==0.9.3
-tornado==6.0.4
+tornado==6.4
